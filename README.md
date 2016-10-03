@@ -1,16 +1,14 @@
-ft-security-whitesource
-=========================
+ft-alertlogicagent-windows
+==========================
 
-This module include two lambda functions which will allow you to send some information into splunk and create and healthcheck.
+This module include script which will allows you to install Alertlogic agent on Windows Boxes UCS and AWS.
+Be sure that you have the latest version of al_agent.msi within the same directory of this script.
 
-healthcheck is available here: http://healthcheck.ft.com/service/a238343130f47e5b1615a56dc9c9af28
+#### Usage
 
-White Source vulnerability overview per systemCode available here: https://s3-eu-west-1.amazonaws.com/app.ft-security-incident-monitor-1k1tztdno1tmc/whitesource.html
-
-As this runs in Lambda, it will be pushed into Splunk
-	
-    sourcetype="aws:cloudwatchlogs:vpcflow" source="*/aws/lambda/ft-security-whitesource*"
+    ./al_agent.ps1
     
 For more information Please visit the page: 
 
-https://sites.google.com/a/ft.com/security/continuous-delivery-security/white-source-software
+* https://docs.alertlogic.com/requirements/system-requirements.htm#reqsAgent
+* https://docs.alertlogic.com/install/alert-logic-agent-windows.htm
