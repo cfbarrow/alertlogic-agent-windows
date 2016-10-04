@@ -75,6 +75,8 @@ if (![ValidatePattern('^[a-zA-Z0-9]+$')]$alprovkey) {
     exit 1
 }
 
+echo "the provision key is: "$alprovkey"the sensor domain is: "$alertlogic_url
+
 <# install Alertlogic Agent #>
 (Start-Process -FilePath "msiexec.exe" -ArgumentList "/i al_agent.msi prov_key=$alprovkey sensor_host=$alertlogic_url install_only=1 /q" -Wait -Passthru).ExitCode
 
@@ -85,10 +87,11 @@ if ($? -eq $true) {
         cmd /c sc config al_agent start= auto
         $count++
         sleep 5
-    } while ((Test-Path($path)) -And ($count=3))
+    } while ((Test-Path($path)) -And ($count-le3))
 
     echo "Alertlogic agent successfully deployed"
 } else {
     echo "Something went wrong during the installation process"
 }
 
+s
