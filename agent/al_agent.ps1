@@ -38,7 +38,8 @@ function check_is_aws () {
         $identitydoc = curl http://169.254.169.254/latest/dynamic/instance-identity/document
     }
     catch {
-        echo $_.Exception.Message
+        #echo $_.Exception.Message
+        echo "Can't retrieve informations about instance-identity document"
     }
     return $identitydoc
 }
@@ -51,21 +52,22 @@ if ($identitydoc) {
     $ident_json = "$identitydoc"
     $val_acc = $ident_json | ConvertFrom-Json | select accountId
     $val_avaib =  $ident_json | ConvertFrom-Json | select availabilityZone
-    $accountid = $val_acc.accountId
-    $region = $val_avaib.availabilityZone
-    $alertlogic_url= $region+"."+$accountid+".alertlogic.in.ft.com"
+    $region = $ident_json | ConvertFrom-Json | select region
 
-     <# Provkey #>
-    $data = Resolve-DnsName _alprovkey.$accountid.alertlogic.in.ft.com -Type TXT
-    $alprovkey = $data.strings
+    $pre = $val_avaib.availabilityZone.Substring($val_avaib.availabilityZone.Length-1)
+    $alertlogic_url= $pre+"."+$region.region+"."+$val_acc.accountId+".alertlogic.in.ft.com"
+    $alertlogic_get_provkey= $val_acc.accountId+".alertlogic.in.ft.com"
+
 } else {
     <# IP #>
-    $alertlogic_url = "ucs.alertlogic.in.ft.com"
-
-     <# Provkey #>
-    $data = Resolve-DnsName  -Type TXT
-    $alprovkey = $data.strings
+    $alertlogic_get_provkey = "ucs.alertlogic.in.ft.com"
+    $alertlogic_url = $alertlogic_get_provkey
 }
+
+
+# Get provision key
+$data = Resolve-DnsName  _alprovkey.$alertlogic_get_provkey -Type TXT
+$alprovkey = $data.strings
 
 <# Check syntax of provision key  #>
 if (![ValidatePattern('^[a-zA-Z0-9]+$')]$alprovkey) {
@@ -77,7 +79,14 @@ if (![ValidatePattern('^[a-zA-Z0-9]+$')]$alprovkey) {
 (Start-Process -FilePath "msiexec.exe" -ArgumentList "/i al_agent.msi prov_key=$alprovkey sensor_host=$alertlogic_url install_only=1 /q" -Wait -Passthru).ExitCode
 
 if ($? -eq $true) {
-    cmd /c sc config al_agent start= auto
+    $path="%CommonProgramFiles(x86)%\AlertLogic\host_key.pem"
+    $count=0
+    do {
+        cmd /c sc config al_agent start= auto
+        $count++
+        sleep 5
+    } while ((Test-Path($path)) -And ($count=3))
+
     echo "Alertlogic agent successfully deployed"
 } else {
     echo "Something went wrong during the installation process"
