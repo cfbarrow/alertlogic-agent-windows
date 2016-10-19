@@ -233,13 +233,14 @@ namespace ftalertlogicagent
 					string area = match_sucess.Substring (match_sucess.Length - 2);
 					// URL for provision host
 					alertlogic_url = area + "." + AWS_AL;
+					alertlogic_get_provkey = "ucs."+AWS_AL;
 				} else {
 					string mess = "Using the default provisioning host" + LEG_URL;
 					Console.WriteLine (mess);
 					_Logger.WriteEntry (mess);
-					alertlogic_url = AWS_AL;
+					alertlogic_url = LEG_URL;
+					alertlogic_get_provkey = "_alprovkey."+LEG_URL;
 				}
-				alertlogic_get_provkey = "ucs."+AWS_AL;
 			}
 
 			// Get provision key
