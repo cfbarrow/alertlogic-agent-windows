@@ -6,7 +6,7 @@ Be sure that you have the latest version of al_agent.msi within the same directo
 
 #### Usage
 
-    ./al_agent.ps1
+    ftalertlogicagent.exe
     
 For more information Please visit the page: 
 
