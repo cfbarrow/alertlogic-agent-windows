@@ -58,7 +58,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GetDnsConfig.cs" />
     <Compile Include="alagent.cs" />
-    <Compile Include="main.py" />
+    <Compile Include="main.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
