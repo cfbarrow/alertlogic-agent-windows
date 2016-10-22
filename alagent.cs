@@ -22,14 +22,14 @@ namespace ftalertlogicagent
 	{
 		
 		static string URL = "http://169.254.169.254/latest/dynamic/instance-identity/document";
-		static string AL_SUFFIX = "alertlogic.in.ft.com";
+		static string AL_SUFFIX = "[]";
 		static string HOST = get_hostname();
 		static string DIR = get_wd();
 		static string MSI = "al_agent.msi";
 		static string AL_CERT_PATH = get_install_path()+"\\AlertLogic\\agent\\ca_crt.pem";
 		static string AL_INST_MSI = DIR+"\\"+MSI;
 		static string SOURCE_TYPE = "alertlogic_deployment";
-		static string LEG_URL = "legacy.alertlogic.in.ft.com";
+		static string LEG_URL = "[]";
 
 		private EventLog _Logger;
 

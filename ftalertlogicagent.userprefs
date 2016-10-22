@@ -1,8 +1,9 @@
 ﻿<Properties StartupItem="ftalertlogicagent.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="alagent.cs">
+  <MonoDevelop.Ide.Workbench>
     <Files>
-      <File FileName="alagent.cs" Line="10" Column="38" />
+      <File FileName="alagent.cs" Line="149" Column="4" />
+      <File FileName="main.cs" Line="4" Column="17" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
