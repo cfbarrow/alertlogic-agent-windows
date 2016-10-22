@@ -22,7 +22,6 @@ This module is the executable which will allows you to install Alertlogic agent 
 * **ftalertlogicagent.exe**: This tool (if properly configured) can be used in a automatic deployment in order to ensure that Alertlogic agent is installed everywhere.
 
 
-
 #### Usage
 
 ```
