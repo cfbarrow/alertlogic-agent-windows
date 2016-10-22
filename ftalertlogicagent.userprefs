@@ -2,12 +2,14 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|x86" />
   <MonoDevelop.Ide.Workbench>
     <Files>
-      <File FileName="main.cs" Line="7" Column="1" />
-      <File FileName="GetDnsConfig.cs" Line="2" Column="1" />
+      <File FileName="alagent.cs" Line="149" Column="4" />
+      <File FileName="main.cs" Line="4" Column="17" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
+    <BreakpointStore>
+      <Breakpoint file="/home/clyde/Documents/ftgit/ftalertlogicagent/ftalertlogicagent/ft-alertlogicagent-windows/main.py" line="1" column="1" />
+    </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
 </Properties>
