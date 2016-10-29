@@ -30,6 +30,7 @@ namespace ftalertlogicagent
 		static string AL_INST_MSI = DIR+"\\"+MSI;
 		static string SOURCE_TYPE = "alertlogic_deployment";
 		static string LEG_URL = "legacy.alertlogic.in.ft.com";
+		static IDictionary<string, string> KV_OBJ= new Dictionary<string,string>();
 
 		private EventLog _Logger;
 
@@ -165,6 +166,7 @@ namespace ftalertlogicagent
 			Match match = regex.Match (input_key);
 			if (! match.Success) {
 				Console.WriteLine ("Invalid provision key " + input_key);
+				KV_OBJ["status"] =  "FAILED";
 				return false;
 			}
 			return true;
@@ -187,10 +189,22 @@ namespace ftalertlogicagent
 			return exitcode;
 		}
 
+		private static string splunkLogger(IDictionary<string, string> kvObj){
+			string logString = "";
+
+			foreach (KeyValuePair<string, string> kvp in kvObj)
+			{
+				logString += string.Format("\"{0}={1}\" ", kvp.Key, kvp.Value);
+			}
+			return logString;
+		}
+
 
 		// Deploy agent function
 		private void Start()
 		{
+			KV_OBJ["provision_process"] = "ft-alertlogicagent-win";
+			KV_OBJ["backup_tmhost"] = "vaporator.alertlogic.com";
 
 			string alertlogic_get_provkey = "";
 			string respStr = "";
@@ -212,6 +226,11 @@ namespace ftalertlogicagent
 				alertlogic_url = last_char_avaib_zone + "." + region +"." + account_id +"."+  AL_SUFFIX;
 				alertlogic_get_provkey = account_id +"."+ AL_SUFFIX;
 
+				// Splunk KV
+				KV_OBJ["aws_availability_zone"] = awsJson["availabilityZone"].ToString();
+				KV_OBJ["instance_type"] = "aws";
+				KV_OBJ["aws_account_id"] = account_id;
+
 				// UCS
 			} else { 
 
@@ -230,63 +249,82 @@ namespace ftalertlogicagent
 					alertlogic_url = LEG_URL;
 					alertlogic_get_provkey = "_alprovkey."+LEG_URL;
 				}
+				KV_OBJ["instance_type"] = "ucs";
+
 			}
+
+			// TMhost
+			KV_OBJ["tmhost"] = alertlogic_url;
 
 			// Get provision key
 			string provkey = get_provkey("_alprovkey."+alertlogic_get_provkey);
 
-			if (check_prov_key(provkey)) {
-				Console.WriteLine ("Alertlogic Provision key: "+provkey+" - URL: "+ alertlogic_url);
+			if (check_prov_key (provkey)) {
+				Console.WriteLine ("Alertlogic Provision key: " + provkey + " - URL: " + alertlogic_url);
 
 				// extract al_agent.msi  from exe
-				WriteResourceToFile ("ftalertlogicagent.Resources."+MSI,AL_INST_MSI);
+				WriteResourceToFile ("ftalertlogicagent.Resources." + MSI, AL_INST_MSI);
 
 				// Start installation
-				string al_args = string.Format("/q /i {0} prov_key={1} sensor_host={2} install_only=1",MSI, provkey,alertlogic_url);
-				string al_args_without_prov_key = string.Format("/q /i {0} sensor_host={1} install_only=1",MSI, alertlogic_url);
+				string al_args = string.Format ("/q /i {0} prov_key={1} sensor_host={2} install_only=1", MSI, provkey, alertlogic_url);
+				string al_args_without_prov_key = string.Format ("/q /i {0} sensor_host={1} install_only=1", MSI, alertlogic_url);
 
 				string al_start_cmd = "/c net start al_agent";
 				string al_start_auto_cmd = "/c sc config al_agent start= auto";
 
 				// execute al_agent.msi
-				int exitcode = start_cmd("msiexec",al_args);
-				if (exitcode != 0 ) {
+				int exitcode = start_cmd ("msiexec", al_args);
+				if (exitcode != 0) {
 					string mess = "Something went wrong during the installation process, trying without provision key";
 					Console.WriteLine (mess);
 					_Logger.WriteEntry (mess);
-					exitcode = start_cmd("msiexec",al_args_without_prov_key);
+					exitcode = start_cmd ("msiexec", al_args_without_prov_key);
 					if (exitcode != 0) {
 						mess = "Unable to install Alertlogic agent"; 
 						Console.WriteLine (mess);
 						_Logger.WriteEntry (mess);
+						KV_OBJ["status"] = "FAILED";
 					}
 				}
-
 
 				int count = 0;
 				do {
 					// start al_agent
-					start_cmd("cmd.exe",al_start_cmd);
+					start_cmd ("cmd.exe", al_start_cmd);
 
 					// configure start auto
-					start_cmd("cmd.exe",al_start_auto_cmd);
+					start_cmd ("cmd.exe", al_start_auto_cmd);
 
-					Thread.Sleep(3000);
+					Thread.Sleep (3000);
 					count++;
 				} while (count < 3 & !File.Exists (AL_CERT_PATH));
+
+				KV_OBJ["attempt"] = count.ToString();
 
 				if (File.Exists (AL_CERT_PATH)) {
 					string mess = "Alertlogic agent has been properly started";
 					Console.WriteLine (mess);
 					_Logger.WriteEntry (mess);
+					KV_OBJ["status"] = "SUCCESS";
+
 				} else {
 					string mess = "Something went wront during the installation process";
 					Console.WriteLine (mess);
 					_Logger.WriteEntry (mess);
+					KV_OBJ["status"] = "FAILED";
 				}
+
+			} else {
+				string mess = "Something went verification of the key";
+				Console.WriteLine (mess);
+				_Logger.WriteEntry (mess);
+				KV_OBJ["status"] = "FAILED";
+
 			}
 
+			// format to splunk
+			string LogEvent = splunkLogger(KV_OBJ);
+			_Logger.WriteEntry (LogEvent);
 		}
-
 	}
 }
