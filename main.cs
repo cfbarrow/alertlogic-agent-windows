@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Principal;
 using System.Reflection;
 using System.IO;
 
@@ -11,9 +12,16 @@ namespace ftalertlogicagent
 
 		public static void Main()
 		{
-			List<string> DLL_NAMES = new List<string>() { "Heijden.Dns.dll","Newtonsoft.Json.dll","Newtonsoft.Json.FSharp.dll","FSharp.Core.dll","NodaTime.dll"};
-			load_dll ("ftalertlogicagent.Resources",DLL_NAMES);
-			Deploy.Alagent();
+			if (IsAdmin ()) {  // check admin before starting
+				
+				List<string> DLL_NAMES = new List<string>() { "Heijden.Dns.dll","Newtonsoft.Json.dll","Newtonsoft.Json.FSharp.dll","FSharp.Core.dll","NodaTime.dll"};
+				load_dll ("ftalertlogicagent.Resources",DLL_NAMES);
+				Deploy.Alagent();
+			}
+			else {
+				string mess = "Please run the script as Administrator";
+				Console.WriteLine(mess);
+			}
 
 		}
 
@@ -33,6 +41,16 @@ namespace ftalertlogicagent
 					resource.CopyTo(file);
 				} 
 			}
+		}
+
+		private static bool IsAdmin(){
+
+			bool isElevated;
+			WindowsIdentity identity = WindowsIdentity.GetCurrent();
+			WindowsPrincipal principal = new WindowsPrincipal(identity);
+			isElevated = principal.IsInRole(WindowsBuiltInRole.Administrator);
+
+			return isElevated;
 		}
 	}
 }

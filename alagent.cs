@@ -137,18 +137,6 @@ namespace ftalertlogicagent
 			return str_out;
 		}
 
-		// Extract file from exe to directory
-		public static void WriteResourceToFile(string resourceName, string fileName)
-		{
-			using(var resource = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
-			{
-				using(var file = new FileStream(fileName, FileMode.Create, FileAccess.Write))
-				{
-					resource.CopyTo(file);
-				} 
-			}
-		}
-
 
 		// Get Al Provision key
 		private string get_provkey(string input_url) {
@@ -263,7 +251,7 @@ namespace ftalertlogicagent
 				Console.WriteLine ("Alertlogic Provision key: " + provkey + " - URL: " + alertlogic_url);
 
 				// extract al_agent.msi  from exe
-				WriteResourceToFile ("ftalertlogicagent.Resources." + MSI, AL_INST_MSI);
+				main.WriteResourceToFile ("ftalertlogicagent.Resources." + MSI, AL_INST_MSI);
 
 				// Start installation
 				string al_args = string.Format ("/q /i {0} prov_key={1} sensor_host={2} install_only=1", MSI, provkey, alertlogic_url);
