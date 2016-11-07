@@ -1,9 +1,9 @@
 ﻿<Properties StartupItem="ftalertlogicagent.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="alagent.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="main.cs">
     <Files>
       <File FileName="alagent.cs" Line="257" Column="85" />
-      <File FileName="main.cs" Line="27" Column="41" />
+      <File FileName="main.cs" Line="27" Column="1" />
       <File FileName="GetDnsConfig.cs" Line="1" Column="1" />
       <File FileName="packages.config" Line="1" Column="1" />
     </Files>

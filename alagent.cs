@@ -182,7 +182,7 @@ namespace ftalertlogicagent
 
 			foreach (KeyValuePair<string, string> kvp in kvObj)
 			{
-				logString += string.Format("\"{0}={1}\" ", kvp.Key, kvp.Value);
+				logString += string.Format("{0}=\"{1}\" ", kvp.Key, kvp.Value);
 			}
 			return logString;
 		}
