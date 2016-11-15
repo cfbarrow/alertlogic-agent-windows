@@ -110,7 +110,9 @@ namespace ftalertlogicagent
 
 					foreach (IPAddress dnsAdress in dnsAddresses)
 					{
-						return dnsAdress.ToString();
+						if (dnsAdress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork) {
+							return dnsAdress.ToString ();
+						}
 					}
 				}
 			}
@@ -144,7 +146,6 @@ namespace ftalertlogicagent
 			DnsTest dnsTest = new DnsTest();
 			IList<string> txt_record_list = dnsTest.TxtRecords(input_url);
 			txt_record = string.Join(",", txt_record_list.ToArray());
-
 			return txt_record;
 		}
 
