@@ -228,7 +228,7 @@ namespace ftalertlogicagent
 					string match_sucess = match.Value;
 					string area = match_sucess.Substring (match_sucess.Length - 2);
 					// URL for provision host
-					alertlogic_url = area + "." + AL_SUFFIX;
+					alertlogic_url = area + ".ucs." + AL_SUFFIX;
 					alertlogic_get_provkey = "ucs."+AL_SUFFIX;
 				} else {
 					string mess = "Using the default provisioning host" + LEG_URL;
