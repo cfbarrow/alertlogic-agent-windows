@@ -31,6 +31,8 @@ namespace ftalertlogicagent
 		static string SOURCE_TYPE = "alertlogic_deployment";
 		static string LEG_URL = "legacy.alertlogic.in.ft.com";
 		static IDictionary<string, string> KV_OBJ= new Dictionary<string,string>();
+		static string URL_MAPPER = "https://alertlogic-tmmapper.in.ft.com/v1/map";
+		static string APIK = "LntPhsPdBb19KtaxkoH0M7o6PYuxhBFX9dFvbKrr";
 
 		private EventLog _Logger;
 
@@ -97,6 +99,31 @@ namespace ftalertlogicagent
 
 		}
 
+		private static string send_aws_info(string input_url, string json)
+		{
+
+			var httpWebRequest = (HttpWebRequest)WebRequest.Create(input_url);
+			httpWebRequest.ContentType = "application/json";
+			httpWebRequest.Method = "POST";
+			httpWebRequest.Headers.Add (string.Format("x-api-key: {0}",APIK));
+
+			using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+			{
+
+				streamWriter.Write(json);
+				streamWriter.Flush();
+				streamWriter.Close();
+			}
+
+			var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+			using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+			{
+				var result = streamReader.ReadToEnd();
+				Console.WriteLine(result);
+				return result;
+			}
+		}
+
 		// Return DNS Server
 		public static string get_dns_server()
 		{
@@ -141,7 +168,7 @@ namespace ftalertlogicagent
 
 
 		// Get Al Provision key
-		private string get_provkey(string input_url) {
+		private string get_dns_txt(string input_url) {
 			string txt_record = "";
 			DnsTest dnsTest = new DnsTest();
 			IList<string> txt_record_list = dnsTest.TxtRecords(input_url);
@@ -214,39 +241,49 @@ namespace ftalertlogicagent
 				// URL for provision host
 				alertlogic_url = last_char_avaib_zone + "." + region +"." + account_id +"."+  AL_SUFFIX;
 				alertlogic_get_provkey = account_id +"."+ AL_SUFFIX;
+			
 
 				// Splunk KV
 				KV_OBJ["aws_availability_zone"] = awsJson["availabilityZone"].ToString();
 				KV_OBJ["instance_type"] = "aws";
-				KV_OBJ["aws_account_id"] = account_id;
+				KV_OBJ["aws_account_id"] = account_id;		
 
 				// UCS
 			} else { 
 
 				Regex regex = new Regex (@"((^ft[a-z]{3}[0-9]+-wv([a-z]{2})))");
 				Match match = regex.Match (HOST.ToLower());
-				if (match.Success) {
+				if (match.Success) { // ############# UCS ###############
 					string match_sucess = match.Value;
 					string area = match_sucess.Substring (match_sucess.Length - 2);
 					// URL for provision host
 					alertlogic_url = area + ".ucs." + AL_SUFFIX;
 					alertlogic_get_provkey = "ucs."+AL_SUFFIX;
-				} else {
+				} else { // ########### Legacy ####################
 					string mess = "Using the default provisioning host" + LEG_URL;
 					Console.WriteLine (mess);
 					_Logger.WriteEntry (mess);
 					alertlogic_url = LEG_URL;
 					alertlogic_get_provkey = "_alprovkey."+LEG_URL;
 				}
-				KV_OBJ["instance_type"] = "ucs";
+				// get Alertlogic customer_id
+				string alcustid = get_dns_txt("_alcustid."+alertlogic_get_provkey);
 
+				if (alcustid != "") {
+					// Call alertlogic assignment
+					string json = string.Format("{\n  \"tm_host\": \"{0}\",\n  \"hostname\": \"{1}\",\n  \"customer_id\": \"{2}\"\n}\n",alertlogic_url,HOST.ToLower(),alcustid);
+					send_aws_info(URL_MAPPER,json);
+				}
+
+				KV_OBJ["instance_type"] = "ucs";
+				KV_OBJ["al_customer_id"] = alcustid;
 			}
 
 			// TMhost
 			KV_OBJ["tmhost"] = alertlogic_url;
 
 			// Get provision key
-			string provkey = get_provkey("_alprovkey."+alertlogic_get_provkey);
+			string provkey = get_dns_txt("_alprovkey."+alertlogic_get_provkey);
 
 			if (check_prov_key (provkey)) {
 				Console.WriteLine ("Alertlogic Provision key: " + provkey + " - URL: " + alertlogic_url);
