@@ -42,6 +42,14 @@ namespace ftalertlogicagent
 
 		}
 
+		public class UcsAutoStr  
+		{  
+			public string tm_host { get; set; }  
+			public string hostname { get; set; }  
+			public string customer_id { get; set; }  
+		}  
+
+
 		// main function
 		public static void Alagent ()
 		{
@@ -103,9 +111,11 @@ namespace ftalertlogicagent
 		{
 
 			var httpWebRequest = (HttpWebRequest)WebRequest.Create(input_url);
+			string httpH = string.Format("x-api-key: {0}",APIK);
 			httpWebRequest.ContentType = "application/json";
 			httpWebRequest.Method = "POST";
-			httpWebRequest.Headers.Add (string.Format("x-api-key: {0}",APIK));
+			httpWebRequest.Headers.Add (httpH);
+		
 
 			using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
 			{
@@ -269,10 +279,16 @@ namespace ftalertlogicagent
 				// get Alertlogic customer_id
 				string alcustid = get_dns_txt("_alcustid."+alertlogic_get_provkey);
 
+				UcsAutoStr MyJson = new UcsAutoStr ();
+				MyJson.tm_host = alertlogic_url;
+				MyJson.hostname = HOST.ToLower(); 
+				MyJson.customer_id = alcustid;
+
+				// Convert object to JOSN string format   
+				string jsonData = JsonConvert.SerializeObject(MyJson);  
+
 				if (alcustid != "") {
-					// Call alertlogic assignment
-					string json = string.Format("{\n  \"tm_host\": \"{0}\",\n  \"hostname\": \"{1}\",\n  \"customer_id\": \"{2}\"\n}\n",alertlogic_url,HOST.ToLower(),alcustid);
-					send_aws_info(URL_MAPPER,json);
+					send_aws_info(URL_MAPPER,jsonData);
 				}
 
 				KV_OBJ["instance_type"] = "ucs";
