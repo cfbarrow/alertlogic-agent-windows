@@ -19,7 +19,7 @@ For Windows users:
 
 This script requires: .net 4.5 framework install on Windows 
 
-    ftalertlogicagent.exegit a
+    ftalertlogicagent.exe
     
 For more information Please visit the page: 
 
