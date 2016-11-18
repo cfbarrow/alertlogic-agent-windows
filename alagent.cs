@@ -61,6 +61,15 @@ namespace ftalertlogicagent
 			Deploy.file_delete (AL_INST_MSI);
 		}
 
+		public static bool is64bit(){
+
+			bool is64bit = !string.IsNullOrEmpty(
+				Environment.GetEnvironmentVariable("PROCESSOR_ARCHITEW6432"));
+
+			return is64bit;
+
+		}
+
 		public static string get_wd () {
 			return System.IO.Directory.GetCurrentDirectory();
 		}
@@ -70,7 +79,13 @@ namespace ftalertlogicagent
 		}
 
 		public static string get_install_path () {
-			return Environment.GetEnvironmentVariable ("programfiles(x86)");
+			string Env = "";
+			if (is64bit ()) {
+				Env = Environment.GetEnvironmentVariable ("programfiles(x86)");
+			} else {
+				Env = Environment.GetEnvironmentVariable ("programfiles");
+			}
+			return Env;
 		}
 
 		public void file_delete(string file_path){
@@ -107,7 +122,7 @@ namespace ftalertlogicagent
 
 		}
 
-		private static string send_aws_info(string input_url, string json)
+		private static void tm_mapper_api_post(string input_url, string json)
 		{
 
 			var httpWebRequest = (HttpWebRequest)WebRequest.Create(input_url);
@@ -116,21 +131,35 @@ namespace ftalertlogicagent
 			httpWebRequest.Method = "POST";
 			httpWebRequest.Headers.Add (httpH);
 		
-
-			using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+			try
 			{
+				using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+				{
 
-				streamWriter.Write(json);
-				streamWriter.Flush();
-				streamWriter.Close();
-			}
+					streamWriter.Write(json);
+					streamWriter.Flush();
+					streamWriter.Close();
+				}
 
-			var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-			using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
-			{
-				var result = streamReader.ReadToEnd();
-				Console.WriteLine(result);
-				return result;
+
+
+					var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+					using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+					{
+						var result = streamReader.ReadToEnd();
+						Console.WriteLine(result);
+					}
+
+			  }
+			   catch (WebException e) {
+
+				using (WebResponse response = e.Response) {
+					HttpWebResponse httpResponse = (HttpWebResponse)response;
+					if (httpResponse.StatusCode.ToString() == "400") {
+						Console.WriteLine ("unable assign this host");
+						KV_OBJ ["assignment_status"] = "FAILED";
+					}
+				}
 			}
 		}
 
@@ -235,6 +264,7 @@ namespace ftalertlogicagent
 			string alertlogic_get_provkey = "";
 			string respStr = "";
 			string alertlogic_url = "";
+			string alcustid = "";
 
 
 			// get json string
@@ -276,31 +306,20 @@ namespace ftalertlogicagent
 					alertlogic_url = LEG_URL;
 					alertlogic_get_provkey = "_alprovkey."+LEG_URL;
 				}
-				// get Alertlogic customer_id
-				string alcustid = get_dns_txt("_alcustid."+alertlogic_get_provkey);
-
-				UcsAutoStr MyJson = new UcsAutoStr ();
-				MyJson.tm_host = alertlogic_url;
-				MyJson.hostname = HOST.ToLower(); 
-				MyJson.customer_id = alcustid;
-
-				// Convert object to JOSN string format   
-				string jsonData = JsonConvert.SerializeObject(MyJson);  
-
-				if (alcustid != "") {
-					send_aws_info(URL_MAPPER,jsonData);
-				}
 
 				KV_OBJ["instance_type"] = "ucs";
-				KV_OBJ["al_customer_id"] = alcustid;
 			}
+
+			// get Alertlogic customer_id
+			alcustid = get_dns_txt("_alcustid."+alertlogic_get_provkey);
+			KV_OBJ["al_customer_id"] = alcustid;
 
 			// TMhost
 			KV_OBJ["tmhost"] = alertlogic_url;
 
 			// Get provision key
 			string provkey = get_dns_txt("_alprovkey."+alertlogic_get_provkey);
-
+	
 			if (check_prov_key (provkey)) {
 				Console.WriteLine ("Alertlogic Provision key: " + provkey + " - URL: " + alertlogic_url);
 
@@ -364,9 +383,25 @@ namespace ftalertlogicagent
 
 			}
 
+			// tm_mapper_api_post() ONLY for UCS
+			if (KV_OBJ ["instance_type"] != "aws") {
+				UcsAutoStr MyJson = new UcsAutoStr ();
+				MyJson.tm_host = alertlogic_url;
+				MyJson.hostname = HOST.ToLower(); 
+				MyJson.customer_id = alcustid;
+
+				// Convert object to JOSN string format   
+				string jsonData = JsonConvert.SerializeObject(MyJson);  
+
+				if (alcustid != "") {
+					tm_mapper_api_post(URL_MAPPER,jsonData);
+				}
+			}
+				
 			// format to splunk
 			string LogEvent = splunkLogger(KV_OBJ);
 			_Logger.WriteEntry (LogEvent);
 		}
+
 	}
 }
