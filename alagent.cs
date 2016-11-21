@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using GetDnsConfig;
 using System.Net.NetworkInformation;
+using System.Web.Script.Serialization;
 using System.Threading;
 using System.Reflection;
 
@@ -254,6 +255,13 @@ namespace ftalertlogicagent
 			return logString;
 		}
 
+		public static string checkwindowsversion(){
+			string win = System.Environment.OSVersion.Version.ToString();
+			string winVers = win.Substring (0, 3);
+			KV_OBJ ["windows_version"] = winVers;
+			return winVers;
+		}
+
 
 		// Deploy agent function
 		private void Start()
@@ -383,15 +391,20 @@ namespace ftalertlogicagent
 
 			}
 
+			// Get windows version
+			checkwindowsversion();
+
 			// tm_mapper_api_post() ONLY for UCS
-			if (KV_OBJ ["instance_type"] != "aws") {
+			if ((KV_OBJ["instance_type"] != "aws") & (Convert.ToDecimal(KV_OBJ["windows_version"]) > Convert.ToDecimal(5.2)) ) {
 				UcsAutoStr MyJson = new UcsAutoStr ();
 				MyJson.tm_host = alertlogic_url;
 				MyJson.hostname = HOST.ToLower(); 
 				MyJson.customer_id = alcustid;
 
 				// Convert object to JOSN string format   
-				string jsonData = JsonConvert.SerializeObject(MyJson);  
+				//string jsonData = JsonConvert.SerializeObject(MyJson);
+				var SerialJson = new JavaScriptSerializer();
+				string jsonData = SerialJson.Serialize (MyJson);
 
 				if (alcustid != "") {
 					tm_mapper_api_post(URL_MAPPER,jsonData);
