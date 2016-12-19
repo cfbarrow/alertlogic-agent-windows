@@ -4,17 +4,7 @@ alertlogicagent-windows
 Alertlogic is a security compliance plateform which could be for many security purposes, including networking intrusion detection and prevention WAF. 
 The aim of this module if to be able to install the agent which will  makes the communication and send the traffic to the Alertlogic Threat Manager. 
 Once this tool installed on the targeted host we will be able to monitor each activities (log events and network traffic) of our host.
-This module is the executable which will allows you to install Alertlogic agent on Windows AWS. It is using informations configured in your DNS records. 
-
-#### System requierments
-
-* Windows Server 2003, SP1
-* Windows Server 2008
-* Windows Server 2012
-* Windows Vista
-* Windows 7
-* Windows 8
-* Windows XP SP1
+This module is the executable which will allows you to install Alertlogic agent on Windows AWS. It is using informations configured in your DNS records.
 
 #### Components of this module
 
@@ -25,12 +15,33 @@ This module is the executable which will allows you to install Alertlogic agent 
 #### Usage
 
 ```
-variable AL_SUFFIX and LEG_URL needs to be set up according to your DNS configuration.
-    
-ftalertlogicagent.exe
+Some variables needs to be set up according to your DNS configuration:
+
+    [LEG_URL]
+    [URL-MAPPER]
+    [API-KEY-FORMAPPER]
+
+This module include script which will allows you to install Alertlogic agent on Windows Boxes UCS and AWS.
+
+#### System requirements
+
+For Windows users:
+
+    Windows Server 2003, SP1
+    Windows Server 2008
+    Windows Server 2012
+    Windows Vista
+    Windows 7
+    Windows 8
+    Windows XP SP1
+
+#### Usage
+
+This script requires: .net 4.5 framework install on Windows 
+
+    ftalertlogicagent.exe
 
 ```
-
 For more information Please visit the page: 
 
 * https://docs.alertlogic.com/requirements/system-requirements.htm#reqsAgent

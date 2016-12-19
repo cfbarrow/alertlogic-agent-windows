@@ -41,3 +41,6 @@
 /home/clyde/Documents/ftgit/ftalertlogicagent/ftalertlogicagent/ft-alertlogicagent-windows/bin/Release/Newtonsoft.Json.FSharp.dll
 /home/clyde/Documents/ftgit/ftalertlogicagent/ftalertlogicagent/ft-alertlogicagent-windows/bin/Release/Heijden.Dns.dll
 /home/clyde/Documents/ftgit/ftalertlogicagent/ftalertlogicagent/ft-alertlogicagent-windows/obj/x86/Release/ftalertlogicagent.Resources.al_agent.msi
+/home/clyde/Documents/ftgit/ftalertlogicagent/ftalertlogicagent/ft-alertlogicagent-windows/bin/Release/Newtonsoft.Json.dll
+/home/clyde/Documents/ftgit/ftalertlogicagent/ftalertlogicagent/ft-alertlogicagent-windows/bin/Release/System.Net.Http.Formatting.dll
+/home/clyde/Documents/ftgit/ftalertlogicagent/ftalertlogicagent/ft-alertlogicagent-windows/bin/Release/WebApiContrib.Formatting.JavaScriptSerializer.dll
